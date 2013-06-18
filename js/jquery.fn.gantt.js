@@ -223,6 +223,8 @@
                 element.dateStart = tools.getMinDate(element);
                 element.dateEnd = tools.getMaxDate(element);
 
+                // SP: added so we have a hook for nav stuff being added to the main container
+                $(element).addClass("fn-gantt-container");
 
                 /* core.render(element); */
                 core.waitToggle(element, true, function () { core.render(element); });
@@ -237,13 +239,16 @@
                 var mLeft, hPos;
 
                 content.append($rightPanel);
-                content.append(core.navigation(element));
+                //content.append(core.navigation(element));
 
                 var $dataPanel = $rightPanel.find(".dataPanel");
 
                 element.gantt = $('<div class="fn-gantt" />').append(content);
 
                 $(element).html(element.gantt);
+
+                // SP: move nav controls to float at bottom
+                $(element).append(core.navigation(element));
 
                 element.scrollNavigation.panelMargin = parseInt($dataPanel.css("margin-left").replace("px", ""), 10);
                 element.scrollNavigation.panelMaxPos = ($dataPanel.width() - $rightPanel.width());
@@ -338,13 +343,23 @@
             dataPanel: function (element, width) {
                 var dataPanel = $('<div class="dataPanel" style="width: ' + width + 'px;"/>');
 
+                // SP ref to bottom, used to position during element scroll
+                //var bottom = $(".bottom")[0];
+
                 // Handle mousewheel events for scrolling the data panel
                 var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
+            
+                // SP attach event to right panel only; left panel can still be used to scroll
                 if (document.attachEvent) {
-                    element.attachEvent("on" + mousewheelevt, function (e) { core.wheelScroll(element, e); });
+                    dataPanel[0].attachEvent("on" + mousewheelevt, function (e) { core.wheelScroll(element, e); });
                 } else if (document.addEventListener) {
-                    element.addEventListener(mousewheelevt, function (e) { core.wheelScroll(element, e); }, false);
+                    dataPanel[0].addEventListener(mousewheelevt, function (e) { core.wheelScroll(element, e); }, false);                    
                 }
+
+                // SP attach scroll event; update position of bottom element on scroll
+                $(element).scroll(function(e) {                    
+                    $(".bottom")[0].style.bottom = -(element.scrollTop) + "px";
+                });
 
                 // Handle click events and dispatch to registered `onAddClick`
                 // function
