@@ -42,7 +42,7 @@
     z-index: 20;
 }
 
-.fn-gantt .row {
+.fn-gantt .row, .fn-gantt-floating .row {
     float: left;
     height: 24px;
     line-height: 24px;
@@ -105,7 +105,7 @@
     background-repeat: repeat;
     background-position: 24px 24px;
 }
-.fn-gantt .day, .fn-gantt .date {
+.fn-gantt .day, .fn-gantt-floating .day, .fn-gantt .date {
     overflow: visible;
     width: 24px;
     line-height: 24px;
@@ -119,13 +119,13 @@
     text-align: center;
 }
 
-.fn-gantt .holiday {
+.fn-gantt .holiday, .fn-gantt-floating .holiday {
     background-color: #ffd263;
     height: 23px;
     margin: 0 0 -1px -1px;
 }
 
-.fn-gantt .today {
+.fn-gantt .today, .fn-gantt-floating .today {
     background-color: #fff8da;
     height: 23px;
     margin: 0 0 -1px -1px;
@@ -145,12 +145,22 @@
     text-align: center;
 }
 
-.fn-gantt .wd {
+.fn-gantt .wd, .fn-gantt-floating .wd {
     background-color: #f6f6f6;
     text-align: center;
 }
 
-.fn-gantt .rightPanel .month, .fn-gantt .rightPanel .year {
+/* SP */
+.fn-gantt-floating {
+    position:fixed;
+    border:1px solid blue;    
+    z-index:50000;
+    top:0;
+    display:none;
+}
+
+/* SP: removed .rightPanel from these selectors. unnecessary and made it more difficult to style the floating panel */
+.fn-gantt .month, .fn-gantt .year, .fn-gantt-floating .month, .fn-gantt-floating .year {
     float: left;
     overflow: hidden;
     border-left: 1px solid #DDD;

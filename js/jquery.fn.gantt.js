@@ -26,6 +26,13 @@
 
     "use strict";
 
+    var _fromPx = function(v) {
+        return v && (v.substring(0, v.length - 2));
+    };
+    var _css = function(el, p) {
+        return _fromPx(el.css(p));
+    };
+
     $.fn.gantt = function (options) {
 
         var cookieKey = "jquery.fn.gantt";
@@ -761,6 +768,79 @@
 
                         break;
                 }
+
+// *************************************************************************************************
+
+                // SP create a copy of the header that we will show whenever the widget is scrolled up so that
+                // the header is partially offscreen. if it is fully offscreen then of course we don't show the copy.
+                var allHeaders = yearArr.join("") + monthArr.join("") + dayArr.join("");                
+                var floatingHeader = $("<div class='fn-gantt-floating'><div style='position:relative'></div></div>"),
+                    floatingInner = $("<div class='fn-gantt-floating-inner'>" + allHeaders + "</div>");
+
+                floatingHeader.find("div").append(floatingInner);                
+                floatingInner.width(dataPanel.width());
+                var body = $("body")[0];
+                // scroll listener on body
+                $(document).on("scroll", function(e) {
+                    var st = body.scrollTop,                                                
+                        ho = dataPanel.offset(),
+                        fh = floatingHeader.height(),
+                        ds = _css(dataPanel, "margin-left"),
+                        eo = $(element).offset(),
+                        eoTop = eo.top,
+                        es = element.scrollTop,
+                        eoBottom = (eo.top - es + fh);
+
+                        
+
+                        
+
+                    if (st >= eoTop && st < eoBottom) {
+                        console.log("top of element is off screen")
+                        //if (st < eoBottom) {
+                            console.log("bottom of element is showing")
+
+                            // place the floating header at 
+                            //  top=element offset top
+                            //  left = dataPanel offset let
+
+                            // place the floating inner at
+                            //
+                            // top = element scroll top
+                            // left = datapanel margin left
+
+                            floatingInner[0].style.left = dataPanel.css("margin-left");
+                            floatingInner[0].style.top = -(es) + "px";
+                            floatingHeader.show();
+                            floatingHeader[0].style.left = ho.left + "px";
+                            floatingHeader[0].style.top = eo.top;
+
+                        //}
+                        //if (es < fh) 
+                            //console.log("")
+                    }
+                    else
+                        floatingHeader.hide();
+
+                    
+                    
+                    //floatingInner[0].style.top = -es + "px";
+
+                    /*if (st >= (ho.top - es) && st < ho.top - es + fh) {
+                        floatingInner[0].style.left = dataPanel.css("margin-left");
+                        floatingInner[0].style.top = "-10px";//-es + "px";
+                        floatingHeader.show();
+                        floatingHeader[0].style.left = (ho.left - ds) + "px";
+                        floatingHeader[0].style.top = (ho.top + es - st) + "px";
+                    }
+                    else {
+                        floatingHeader.hide();
+                    }*/
+                });
+
+                $("body").append(floatingHeader);
+
+// ********************************************************************************************************                
 
                 return $('<div class="rightPanel"></div>').append(dataPanel);
             },
