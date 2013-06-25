@@ -71,7 +71,7 @@
                 cd = new Date(cd.getFullYear(), cd.getMonth(), cd.getDate());
                 ed = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate());
                 return cd.getTime() === ed.getTime();
-            }
+            }  
         });
         // custom selector `:findweek` used to match on specified week in ms.
         $.extend($.expr[":"], {
@@ -1103,152 +1103,154 @@
                         $.each(entry.values, function (j, day) {
                             var _bar = null;
 
-                            switch (settings.scale) {
-                                // **Hourly data**
-                                case "hours":
-                                    var dFrom = tools.genId(tools.dateDeserialize(day.from).getTime(), element.scaleStep);
-                                    var from = $(element).find('#dh-' + dFrom);
+                            if (day.from != null && day.to != null) {
+                                switch (settings.scale) {
+                                    // **Hourly data**
+                                    case "hours":
+                                        var dFrom = tools.genId(tools.dateDeserialize(day.from).getTime(), element.scaleStep);
+                                        var from = $(element).find('#dh-' + dFrom);
 
-                                    var dTo = tools.genId(tools.dateDeserialize(day.to).getTime(), element.scaleStep);
-                                    var to = $(element).find('#dh-' + dTo);
+                                        var dTo = tools.genId(tools.dateDeserialize(day.to).getTime(), element.scaleStep);
+                                        var to = $(element).find('#dh-' + dTo);
 
-                                    var cFrom = from.attr("offset");
-                                    var cTo = to.attr("offset");
-                                    var dl = Math.floor((cTo - cFrom) / tools.getCellSize()) + 1;
+                                        var cFrom = from.attr("offset");
+                                        var cTo = to.attr("offset");
+                                        var dl = Math.floor((cTo - cFrom) / tools.getCellSize()) + 1;
 
-                                    _bar = core.createProgressBar(
-                                                dl,
-                                                day.customClass ? day.customClass : "",
-                                                day.desc ? day.desc : "",
-                                                day.label ? day.label : "",
+                                        _bar = core.createProgressBar(
+                                                    dl,
+                                                    day.customClass ? day.customClass : "",
+                                                    day.desc ? day.desc : "",
+                                                    day.label ? day.label : "",
+                                                    day.dataObj ? day.dataObj : null
+                                                );
+
+                                        // find row
+                                        var topEl = $(element).find("#rowheader" + i);
+
+                                        var top = tools.getCellSize() * 5 + 2 + parseInt(topEl.attr("offset"), 10);
+                                        _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
+
+                                        datapanel.append(_bar);
+                                        break;
+
+                                    // **Weekly data**
+                                    case "weeks":
+                                        var dtFrom = tools.dateDeserialize(day.from);
+                                        var dtTo = tools.dateDeserialize(day.to);
+
+                                        if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
+                                            dtFrom.setDate(dtFrom.getDate() + 4);
+                                        }
+
+                                        if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
+                                            dtFrom.setDate(dtFrom.getDate() + 4);
+                                        }
+
+                                        if (dtTo.getDate() <= 3 && dtTo.getMonth() === 0) {
+                                            dtTo.setDate(dtTo.getDate() + 4);
+                                        }
+
+                                        var from = $(element).find("#" + dtFrom.getWeekId());
+
+                                        var cFrom = from.attr("offset");
+
+                                        var to = $(element).find("#" + dtTo.getWeekId());
+                                        var cTo = to.attr("offset");
+
+                                        var dl = Math.round((cTo - cFrom) / tools.getCellSize()) + 1;
+
+                                        _bar = core.createProgressBar(
+                                                 dl,
+                                                 day.customClass ? day.customClass : "",
+                                                 day.desc ? day.desc : "",
+                                                 day.label ? day.label : "",
                                                 day.dataObj ? day.dataObj : null
                                             );
 
-                                    // find row
-                                    var topEl = $(element).find("#rowheader" + i);
+                                        // find row
+                                        var topEl = $(element).find("#rowheader" + i);
 
-                                    var top = tools.getCellSize() * 5 + 2 + parseInt(topEl.attr("offset"), 10);
-                                    _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
+                                        var top = tools.getCellSize() * 3 + 2 + parseInt(topEl.attr("offset"), 10);
+                                        _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
 
-                                    datapanel.append(_bar);
-                                    break;
+                                        datapanel.append(_bar);
+                                        break;
 
-                                // **Weekly data**
-                                case "weeks":
-                                    var dtFrom = tools.dateDeserialize(day.from);
-                                    var dtTo = tools.dateDeserialize(day.to);
+                                    // **Monthly data**
+                                    case "months":
+                                        var dtFrom = tools.dateDeserialize(day.from);
+                                        var dtTo = tools.dateDeserialize(day.to);
 
-                                    if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
-                                        dtFrom.setDate(dtFrom.getDate() + 4);
-                                    }
+                                        if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
+                                            dtFrom.setDate(dtFrom.getDate() + 4);
+                                        }
 
-                                    if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
-                                        dtFrom.setDate(dtFrom.getDate() + 4);
-                                    }
+                                        if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
+                                            dtFrom.setDate(dtFrom.getDate() + 4);
+                                        }
 
-                                    if (dtTo.getDate() <= 3 && dtTo.getMonth() === 0) {
-                                        dtTo.setDate(dtTo.getDate() + 4);
-                                    }
+                                        if (dtTo.getDate() <= 3 && dtTo.getMonth() === 0) {
+                                            dtTo.setDate(dtTo.getDate() + 4);
+                                        }
 
-                                    var from = $(element).find("#" + dtFrom.getWeekId());
+                                        var from = $(element).find("#dh-" + tools.genId(dtFrom.getTime()));
+                                        var cFrom = from.attr("offset");
+                                        var to = $(element).find("#dh-" + tools.genId(dtTo.getTime()));
+                                        var cTo = to.attr("offset");
+                                        var dl = Math.round((cTo - cFrom) / tools.getCellSize()) + 1;
 
-                                    var cFrom = from.attr("offset");
-
-                                    var to = $(element).find("#" + dtTo.getWeekId());
-                                    var cTo = to.attr("offset");
-
-                                    var dl = Math.round((cTo - cFrom) / tools.getCellSize()) + 1;
-
-                                    _bar = core.createProgressBar(
-                                             dl,
-                                             day.customClass ? day.customClass : "",
-                                             day.desc ? day.desc : "",
-                                             day.label ? day.label : "",
+                                        _bar = core.createProgressBar(
+                                            dl,
+                                            day.customClass ? day.customClass : "",
+                                            day.desc ? day.desc : "",
+                                            day.label ? day.label : "",
                                             day.dataObj ? day.dataObj : null
                                         );
 
-                                    // find row
-                                    var topEl = $(element).find("#rowheader" + i);
+                                        // find row
+                                        var topEl = $(element).find("#rowheader" + i);
 
-                                    var top = tools.getCellSize() * 3 + 2 + parseInt(topEl.attr("offset"), 10);
-                                    _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
+                                        var top = tools.getCellSize() * 2 + 2 + parseInt(topEl.attr("offset"), 10);
+                                        _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
 
-                                    datapanel.append(_bar);
-                                    break;
+                                        datapanel.append(_bar);
+                                        break;
 
-                                // **Monthly data**
-                                case "months":
-                                    var dtFrom = tools.dateDeserialize(day.from);
-                                    var dtTo = tools.dateDeserialize(day.to);
+                                    // **Days**
+                                    default:
+                                        var dFrom = tools.genId(tools.dateDeserialize(day.from).getTime());
+                                        var dTo = tools.genId(tools.dateDeserialize(day.to).getTime());
 
-                                    if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
-                                        dtFrom.setDate(dtFrom.getDate() + 4);
-                                    }
+                                        var from = $(element).find("#dh-" + dFrom);
+                                        var cFrom = from.attr("offset");
 
-                                    if (dtFrom.getDate() <= 3 && dtFrom.getMonth() === 0) {
-                                        dtFrom.setDate(dtFrom.getDate() + 4);
-                                    }
+                                        var dl = Math.floor(((dTo / 1000) - (dFrom / 1000)) / 86400) + 1;
+                                        _bar = core.createProgressBar(
+                                                    dl,
+                                                    day.customClass ? day.customClass : "",
+                                                    day.desc ? day.desc : "",
+                                                    day.label ? day.label : "",
+                                                    day.dataObj ? day.dataObj : null
+                                            );
 
-                                    if (dtTo.getDate() <= 3 && dtTo.getMonth() === 0) {
-                                        dtTo.setDate(dtTo.getDate() + 4);
-                                    }
+                                        // find row
+                                        var topEl = $(element).find("#rowheader" + i);
 
-                                    var from = $(element).find("#dh-" + tools.genId(dtFrom.getTime()));
-                                    var cFrom = from.attr("offset");
-                                    var to = $(element).find("#dh-" + tools.genId(dtTo.getTime()));
-                                    var cTo = to.attr("offset");
-                                    var dl = Math.round((cTo - cFrom) / tools.getCellSize()) + 1;
+                                        var top = tools.getCellSize() * 4 + 2 + parseInt(topEl.attr("offset"), 10);
+                                        _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
 
-                                    _bar = core.createProgressBar(
-                                        dl,
-                                        day.customClass ? day.customClass : "",
-                                        day.desc ? day.desc : "",
-                                        day.label ? day.label : "",
-                                        day.dataObj ? day.dataObj : null
-                                    );
+                                        datapanel.append(_bar);
 
-                                    // find row
-                                    var topEl = $(element).find("#rowheader" + i);
-
-                                    var top = tools.getCellSize() * 2 + 2 + parseInt(topEl.attr("offset"), 10);
-                                    _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
-
-                                    datapanel.append(_bar);
-                                    break;
-
-                                // **Days**
-                                default:
-                                    var dFrom = tools.genId(tools.dateDeserialize(day.from).getTime());
-                                    var dTo = tools.genId(tools.dateDeserialize(day.to).getTime());
-
-                                    var from = $(element).find("#dh-" + dFrom);
-                                    var cFrom = from.attr("offset");
-
-                                    var dl = Math.floor(((dTo / 1000) - (dFrom / 1000)) / 86400) + 1;
-                                    _bar = core.createProgressBar(
-                                                dl,
-                                                day.customClass ? day.customClass : "",
-                                                day.desc ? day.desc : "",
-                                                day.label ? day.label : "",
-                                                day.dataObj ? day.dataObj : null
-                                        );
-
-                                    // find row
-                                    var topEl = $(element).find("#rowheader" + i);
-
-                                    var top = tools.getCellSize() * 4 + 2 + parseInt(topEl.attr("offset"), 10);
-                                    _bar.css({ 'margin-top': top, 'margin-left': Math.floor(cFrom) });
-
-                                    datapanel.append(_bar);
-
-                                    break;
-                            }
-                            var $l = _bar.find(".fn-label");
-                            if ($l && _bar.length) {
-                                var gray = invertColor(_bar[0].style.backgroundColor);
-                                $l.css("color", gray);
-                            } else if ($l) {
-                                $l.css("color", "");
+                                        break;
+                                }
+                                var $l = _bar.find(".fn-label");
+                                if ($l && _bar.length) {
+                                    var gray = invertColor(_bar[0].style.backgroundColor);
+                                    $l.css("color", gray);
+                                } else if ($l) {
+                                    $l.css("color", "");
+                                }
                             }
                         });
 
@@ -1538,7 +1540,8 @@
                 var maxDate = null;
                 $.each(element.data, function (i, entry) {
                     $.each(entry.values, function (i, date) {
-                        maxDate = maxDate < tools.dateDeserialize(date.to) ? tools.dateDeserialize(date.to) : maxDate;
+                        if (date.to != null)
+                            maxDate = maxDate < tools.dateDeserialize(date.to) ? tools.dateDeserialize(date.to) : maxDate;
                     });
                 });
 
@@ -1571,7 +1574,8 @@
                 var minDate = null;
                 $.each(element.data, function (i, entry) {
                     $.each(entry.values, function (i, date) {
-                        minDate = minDate > tools.dateDeserialize(date.from) || minDate === null ? tools.dateDeserialize(date.from) : minDate;
+                        if (date.from != null)
+                            minDate = minDate > tools.dateDeserialize(date.from) || minDate === null ? tools.dateDeserialize(date.from) : minDate;
                     });
                 });
                 switch (settings.scale) {
