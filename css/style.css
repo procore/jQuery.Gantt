@@ -35,25 +35,25 @@
 
 .fn-gantt .leftPanel {
     float: left;
-    width: 225px;
+    width: 400px;
     overflow: hidden;
     border-right: 1px solid #DDD;
     position: relative;
     z-index: 20;
+    background-color: #f6f6f6;
 }
 
-.fn-gantt .row, .fn-gantt-floating .row {
+.fn-gantt .row {
     float: left;
     height: 24px;
     line-height: 24px;
-    margin-left: -24px;
 }
 
 .fn-gantt .leftPanel .fn-label {
     display: inline-block;
     margin: 0 0 0 5px;
     color: #484A4D;
-    width: 110px;
+    width: 225px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -71,12 +71,12 @@
 }
 
 .fn-gantt .leftPanel .name {
-    width: 110px;
+    width: 225px;
     font-weight: bold;
 }
 
 .fn-gantt .leftPanel .desc {
-    width: 115px;
+    width: 175px;
 }
 
 .fn-gantt .leftPanel .fn-wide, .fn-gantt .leftPanel .fn-wide .fn-label {
@@ -101,11 +101,11 @@
 .fn-gantt .dataPanel {
     margin-left: 0px;
     border-right: 1px solid #DDD;
-    background-image: url(../img/grid.png);
+    background-image: url(/assets/images/gantt-grid.png);
     background-repeat: repeat;
     background-position: 24px 24px;
 }
-.fn-gantt .day, .fn-gantt-floating .day, .fn-gantt .date {
+.fn-gantt .day, .fn-gantt .date {
     overflow: visible;
     width: 24px;
     line-height: 24px;
@@ -119,13 +119,13 @@
     text-align: center;
 }
 
-.fn-gantt .holiday, .fn-gantt-floating .holiday {
+.fn-gantt .holiday {
     background-color: #ffd263;
     height: 23px;
     margin: 0 0 -1px -1px;
 }
 
-.fn-gantt .today, .fn-gantt-floating .today {
+.fn-gantt .today {
     background-color: #fff8da;
     height: 23px;
     margin: 0 0 -1px -1px;
@@ -145,22 +145,12 @@
     text-align: center;
 }
 
-.fn-gantt .wd, .fn-gantt-floating .wd {
+.fn-gantt .wd {
     background-color: #f6f6f6;
     text-align: center;
 }
 
-/* SP */
-.fn-gantt-floating {
-    position:fixed;
-    border:1px solid blue;    
-    z-index:50000;
-    top:0;
-    display:none;
-}
-
-/* SP: removed .rightPanel from these selectors. unnecessary and made it more difficult to style the floating panel */
-.fn-gantt .month, .fn-gantt .year, .fn-gantt-floating .month, .fn-gantt-floating .year {
+.fn-gantt .rightPanel .month, .fn-gantt .rightPanel .year {
     float: left;
     overflow: hidden;
     border-left: 1px solid #DDD;
@@ -236,6 +226,10 @@
     color: #714715 !important;
 }
 
+.fn-gantt .summaryTask {
+    height:5px !important;
+    background-color: black !important;             
+}
 
 /* === BOTTOM NAVIGATION === */
 
@@ -306,7 +300,7 @@
 .fn-gantt-container .navigate .nav-slider-button {
     width: 17px;
     height: 60px;
-    background: url(../img/slider_handle.png) center center no-repeat;
+    background: url(/assets/images/gantt-slider-handle.png) center center no-repeat;
     left: 0px;
     top: 0px;
     margin: -26px 0 0 0;
@@ -337,7 +331,7 @@
     width: 20px;
     height: 20px;
     font-size: 0px;
-    background: #595959 url(../img/icon_sprite.png) !important;
+    background: #595959 url(/assets/images/gantt-icon-sprite.png) !important;
     border: 1px solid #454546;
     cursor: pointer;
     vertical-align: top;
@@ -413,7 +407,7 @@
 }
 
 .fn-gantt-loader {
-    background-image: url(../img/loader_bg.png);
+    background-image: url(/assets/images/gantt-loader-bg.png);
     z-index: 30;
 }
 
@@ -434,4 +428,3 @@
 .row:after {
     clear: both;
 }
-
