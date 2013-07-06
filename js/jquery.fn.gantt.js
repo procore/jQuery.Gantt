@@ -1024,14 +1024,29 @@
             // Return an element representing a progress of position within
             // the entire chart
             createProgressBar: function (days, cls, desc, label, dataObj) {
-                var cellWidth = tools.getCellSize();
-                var barMarg = tools.getProgressBarMargin() || 0;
-                var bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>')
-                        .addClass(cls)
-                        .css({
-                            width: ((cellWidth * days) - barMarg) + 5
-                        })
-                        .data("dataObj", dataObj);
+                var cellWidth = tools.getCellSize(),
+                    barMarg = tools.getProgressBarMargin() || 0,
+                    lbl = $('<div  style="float:right;padding-left:5px;width:auto;">' + label + '</div>'),                    
+                    width = ((cellWidth * days) - barMarg) + 5;                
+
+                //var bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>')
+                var bar = $('<div class="bar" style="background-color:transparent;"></div>')
+                       // .addClass(cls)
+                        //.css({
+                        //    width: width
+                        //})
+                        .data("dataObj", dataObj);   
+
+                    // TODO move styles to a class here, and for label above
+                var barVisual = $("<div style='float:left;height:20px'></div>").addClass(cls).css("width", width);
+                bar.append(barVisual);             
+                bar.append(lbl)
+
+                // TODO for the task that ends at the latest date, the label will now most likely
+                // be off the right of the painted area.  what to do?  add more days just to cover the
+                // length of the label?  seems kind of wrong.  but then what else could we do?  paint
+                // a big blank space to the right of all the date info?
+                //console.log(lbl.width())
 
                 if (desc) {
                     bar
