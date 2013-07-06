@@ -8,6 +8,7 @@
 //          scale: "weeks",
 //          minScale: "weeks",
 //          maxScale: "months",
+//          labelsOnRight:false,  // defaults to true
 //          onItemClick: function(data) {
 //              alert("Item clicked - show some details");
 //          },
@@ -53,7 +54,8 @@
             onItemClick: function (data) { return; },
             onAddClick: function (data) { return; },
             onRender: function() { return; },
-            scrollToToday: true
+            scrollToToday: true,
+            labelsOnRight:true
         };
 
         // custom selector `:findday` used to match on specified day in ms.
@@ -1024,23 +1026,26 @@
             // Return an element representing a progress of position within
             // the entire chart
             createProgressBar: function (days, cls, desc, label, dataObj) {
+
                 var cellWidth = tools.getCellSize(),
-                    barMarg = tools.getProgressBarMargin() || 0,
-                    lbl = $('<div class="fn-label label-on-right">' + label + '</div>'),                    
-                    width = ((cellWidth * days) - barMarg) + 5;                
+                    barMarg = tools.getProgressBarMargin() || 0,                    
+                    width = ((cellWidth * days) - barMarg) + 5,
+                    bar; 
 
-                //var bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>')
-                var bar = $('<div class="bar" style="background-color:transparent;"></div>')
-                       // .addClass(cls)
-                        //.css({
-                        //    width: width
-                        //})
-                        .data("dataObj", dataObj);   
-
-                    // TODO move styles to a class here, and for label above
-                var barVisual = $("<div style='float:left;height:20px'></div>").addClass(cls).css("width", width);
-                bar.append(barVisual);             
-                bar.append(lbl)
+                if (!settings.labelsOnRight) {
+                    bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>');                    
+                    bar.addClass(cls).css("width", width);
+                }
+                else {
+                    var lbl = $('<div class="fn-label label-on-right">' + label + '</div>'),                                   
+                    bar = $('<div class="bar" style="background-color:transparent;"></div>');
+                    var barVisual = $("<div class='bar-inner'></div>").addClass(cls).css("width", width);
+                    bar.append(barVisual);             
+                    bar.append(lbl);
+                }
+                    
+                bar.data("dataObj", dataObj);   
+            
 
                 // TODO for the task that ends at the latest date, the label will now most likely
                 // be off the right of the painted area.  what to do?  add more days just to cover the
@@ -1268,6 +1273,25 @@
 
                     }
                 });
+
+                // if labels are on the right, now that everything is in the DOM we can adjust the width
+                // of the right pane to take into account the label for the latest task chronologically.
+                var mr = -Infinity;
+                $(".bar").each(function(i, e) {                    
+                    var l = $(this).find(".fn-label"),
+                        lw = l.outerWidth(),
+                        lo = l.offset();
+
+                    mr = Math.max(mr, lo.left + lw);
+
+                });                
+
+                // SP: setting the data Panel's width seemed like a suitable thing to do, but it results
+                // in a bunch of extra days being painted, and doesn't make the label show.
+                // $(".dataPanel").width(mr)
+                //console.log("the rightmost label ends at ", mr);
+                //console.log("the rightpanel width is ", $(".dataPanel").width());
+
             },
             // **Navigation**
             navigateTo: function (element, val) {

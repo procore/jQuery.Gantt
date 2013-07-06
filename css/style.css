@@ -193,13 +193,18 @@
     margin: 4px 3px 3px 3px;
     position: absolute;
     z-index: 10;
-    text-align: center;
-        -webkit-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-        -moz-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-        box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-            -webkit-border-radius: 3px;
-            -moz-border-radius: 3px;
-            border-radius: 3px;
+    text-align: center;    
+}
+
+.fn-gantt .bar-inner {
+    float:left;
+    height:20px;
+    -webkit-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    -moz-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .fn-gantt .bar .fn-label {
