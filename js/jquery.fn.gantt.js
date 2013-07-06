@@ -1026,7 +1026,7 @@
             createProgressBar: function (days, cls, desc, label, dataObj) {
                 var cellWidth = tools.getCellSize(),
                     barMarg = tools.getProgressBarMargin() || 0,
-                    lbl = $('<div  style="float:right;padding-left:5px;width:auto;">' + label + '</div>'),                    
+                    lbl = $('<div class="fn-label label-on-right">' + label + '</div>'),                    
                     width = ((cellWidth * days) - barMarg) + 5;                
 
                 //var bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>')

@@ -215,6 +215,14 @@
     font-size: 11px;
 }
 
+/* SP */
+.fn-gantt .bar .label-on-right {
+    width:auto;
+    float:right;
+    padding-left:5px;
+    padding-right:5px;
+}
+
 .fn-gantt .ganttRed {
     background-color: #F9C4E1;
 }
@@ -234,6 +242,10 @@
 }
 .fn-gantt .ganttOrange .fn-label {
     color: #714715 !important;
+}
+
+.fn-gantt .ganttBlue {
+    background-color: #D0E4FD;
 }
 
 
