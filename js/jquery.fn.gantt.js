@@ -1276,21 +1276,30 @@
 
                 // if labels are on the right, now that everything is in the DOM we can adjust the width
                 // of the right pane to take into account the label for the latest task chronologically.
-                var mr = -Infinity;
-                $(".bar").each(function(i, e) {                    
-                    var l = $(this).find(".fn-label"),
-                        lw = l.outerWidth(),
-                        lo = l.offset();
+                // also here we set a width for each bar that takes its inner bar and label into account; this
+                // then forces them to not wrap (we cant do this before it has been added to the dom, as the text
+                // varies and so does its font size, so the actual rendered width of the label is unknown until
+                // the browser has drawn it)
+                if (settings.labelsOnRight) {
+                    var mr = -Infinity;
+                    $(".bar").each(function(i, e) {                    
+                        var l = $(this).find(".fn-label"),
+                            bi = $(this).find(".bar-inner"),
+                            biw = bi.outerWidth(),
+                            lw = l.outerWidth(),
+                            lo = l.offset();
 
-                    mr = Math.max(mr, lo.left + lw);
+                        mr = Math.max(mr, lo.left + lw);
 
-                });                
+                        $(this).width(biw + lw); // set bar width to encompass inner bar and label
+                    });                
+                }
 
                 // SP: setting the data Panel's width seemed like a suitable thing to do, but it results
                 // in a bunch of extra days being painted, and doesn't make the label show.
                 // $(".dataPanel").width(mr)
-                //console.log("the rightmost label ends at ", mr);
-                //console.log("the rightpanel width is ", $(".dataPanel").width());
+                console.log("the rightmost label ends at ", mr);
+                console.log("the rightpanel width is ", $(".dataPanel").width());
 
             },
             // **Navigation**
