@@ -454,7 +454,6 @@
 
                     var horArr = [];
 
-
                     var today = new Date();
                     today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                     var holidays = settings.holidays ? settings.holidays.join() : '';
@@ -1300,6 +1299,8 @@
                 // $(".dataPanel").width(mr)
                 console.log("the rightmost label ends at ", mr);
                 console.log("the rightpanel width is ", $(".dataPanel").width());
+                var cells = Math.ceil( (mr - $(".dataPanel").width()) / tools.getCellSize() );
+                console.log("this would appear to be a delta of ", cells);
 
             },
             // **Navigation**
