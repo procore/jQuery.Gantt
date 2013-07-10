@@ -55,7 +55,8 @@
             onAddClick: function (data) { return; },
             onRender: function() { return; },
             scrollToToday: true,
-            labelsOnRight:true
+            labelsOnRight:true,
+            lastLabelPadding:20
         };
 
         // custom selector `:findday` used to match on specified day in ms.
@@ -1286,22 +1287,19 @@
                             bi = $(this).find(".bar-inner"),
                             biw = bi.outerWidth(),
                             lw = l.outerWidth(),
-                            lo = l.offset();
+                            lo = l.offset(),
+                            w = biw + lw,
+                            ml = parseInt(_css($(this), "margin-left"));
 
-                        mr = Math.max(mr, lo.left + lw);
+                        // keep track of the rightmost label position.
+                        mr = Math.max(mr, ml + w);
 
-                        $(this).width(biw + lw); // set bar width to encompass inner bar and label
+                        $(this).width(w); // set bar width to encompass inner bar and label
                     });                
                 }
 
-                // SP: setting the data Panel's width seemed like a suitable thing to do, but it results
-                // in a bunch of extra days being painted, and doesn't make the label show.
-                // $(".dataPanel").width(mr)
-                console.log("the rightmost label ends at ", mr);
-                console.log("the rightpanel width is ", $(".dataPanel").width());
-                var cells = Math.ceil( (mr - $(".dataPanel").width()) / tools.getCellSize() );
-                console.log("this would appear to be a delta of ", cells);
-
+                // adjust the scroll max to allow for the last label
+                element.scrollNavigation.panelMaxPos += (mr - $(".dataPanel").width() + settings.lastLabelPadding);            
             },
             // **Navigation**
             navigateTo: function (element, val) {
