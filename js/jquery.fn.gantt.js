@@ -1044,14 +1044,7 @@
                     bar.append(lbl);
                 }
                     
-                bar.data("dataObj", dataObj);   
-            
-
-                // TODO for the task that ends at the latest date, the label will now most likely
-                // be off the right of the painted area.  what to do?  add more days just to cover the
-                // length of the label?  seems kind of wrong.  but then what else could we do?  paint
-                // a big blank space to the right of all the date info?
-                //console.log(lbl.width())
+                bar.data("dataObj", dataObj);               
 
                 if (desc) {
                     bar
