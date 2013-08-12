@@ -29,6 +29,15 @@
 }
 
 
+/* new left panel (a table) */
+.fn-gantt .gantt-table {
+    position:absolute;
+    left:0px;
+    top:0px;
+    z-index:50;
+    width:225px;
+}
+
 
 
 /* === LEFT PANEL === */

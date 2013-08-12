@@ -243,8 +243,14 @@
             // **Render the grid**
             render: function (element) {
                 var content = $('<div class="fn-content"/>');
-                var $leftPanel = core.leftPanel(element);
+                
+                var $leftPanel = core.leftPanel(element);                                
                 content.append($leftPanel);
+
+                // sp 
+                var $leftTable = core.leftTable(element);
+                content.append($leftTable);
+
                 var $rightPanel = core.rightPanel(element, $leftPanel);
                 var mLeft, hPos;
 
@@ -320,6 +326,35 @@
                 $dataPanel.css({ height: $leftPanel.height() });
                 core.waitToggle(element, false);
                 settings.onRender();
+            },
+
+            // create and return the left table 
+            leftTable: function(element) {
+                var p = $("<div class='gantt-table'></div>").css("top", tools.getCellSize() * element.headerRows + "px"),
+                    t = $("<table></table>");
+
+                p.append(t);
+
+                var entries = [];
+                $.each(element.data, function (i, entry) {
+                    if (i >= element.pageNum * settings.itemsPerPage && i < (element.pageNum * settings.itemsPerPage + settings.itemsPerPage)) {
+                        /*entries.push('<div class="row name row' + i + (entry.desc ? '' : ' fn-wide') + '" id="rowheader' + i + '" offset="' + i % settings.itemsPerPage * tools.getCellSize() + '">');
+                        entries.push('<span class="fn-label' + (entry.cssClass ? ' ' + entry.cssClass : '') + '">' + entry.name + '</span>');
+                        entries.push('</div>');
+
+                        if (entry.desc) {
+                            entries.push('<div class="row desc row' + i + ' " id="RowdId_' + i + '" data-id="' + entry.id + '">');
+                            entries.push('<span class="fn-label' + (entry.cssClass ? ' ' + entry.cssClass : '') + '">' + entry.desc + '</span>');
+                            entries.push('</div>');
+                        }*/
+                        entries.push("<tr><td>" + entry.name + "</td></tr>");
+
+                    }
+                });
+                p.append(entries.join(""));
+
+
+                return p;
             },
 
             // Create and return the left panel with labels
