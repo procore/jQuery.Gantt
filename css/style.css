@@ -68,13 +68,14 @@
     overflow: hidden;
     font-size:11px;
     color:#414B57 !important;
-    /*height:23px;*/
+    height:21px;
+    padding-right:5px;
+    padding-left:3px;
 }
 
 .gantt-table th {
     background-color: #f6f6f6;
-    border-bottom: 1px solid #DDD;
-    height:21px;
+    border-bottom: 1px solid #DDD;    
 }
 
 .gantt-table table {
@@ -83,7 +84,7 @@
 }
 
 .gantt-table td {
-    height: 22px;
+    border-bottom:1px solid #DDD;
 }
 
 

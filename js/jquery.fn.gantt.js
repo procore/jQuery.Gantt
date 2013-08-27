@@ -267,6 +267,9 @@
 
                 element.data.sort(function(a, b) {
                     var v1 = a[columnId], v2 = b[columnId], retVals = {"up":[1, -1], "down":[-1, 1]};
+                    if (v1 == null && v2 == null) return 0;
+                    else if (v1 == null && v2 != null) return -1;
+                    else if (v2 == null && v1 != null) return 1;
                     return v1 > v2 ? retVals[element.sortType][0] : v2 > v1 ? retVals[element.sortType][1] : 0;
                 });
                 // redraw the table
@@ -1557,6 +1560,7 @@
                 element.scrollNavigation.repositionDelay = setTimeout(core.repositionLabel, 50, element);
 
                 if (e.preventDefault) {
+                    e.stopPropagation();
                     e.preventDefault();
                 } else {
                     return false;
