@@ -185,6 +185,8 @@
             }
         };
 
+        var leftPanel, dataPanel, element;
+
 
         // Grid management
         // ===============
@@ -212,7 +214,9 @@
                 // Initialize data with a json object or fetch via an xhr
                 // request depending on `settings.source`
                 if (typeof settings.source !== "string") {
-                    element.data = settings.source;
+                    //element.data = settings.source;
+                    element.groups = settings.groups;
+                    element.columns = settings.columns;
                     core.init(element);
                 } else {
                     $.getJSON(settings.source, function (jsData) {
@@ -226,6 +230,20 @@
             // Here we calculate the number of rows, pages and visible start
             // and end dates once the data is ready
             init: function (element) {
+                // SP: create data by doing an initial dump from groups into data
+                element.data = [];
+                for (var i = 0; i < element.groups.length; i++) {
+                    var g = element.groups[i];
+                    for (var j = 0; j < g.tasks.length; j++) {
+                        var t = g.tasks[j];
+                        t.group = i;                        
+                        t.groupName = g.name;
+                        element.data.push(t);
+                    }
+                }
+                element.sortColumn = "group"; // by default.
+                element.sortType = "up";
+
                 element.rowsNum = element.data.length;
                 element.pageCount = Math.ceil(element.rowsNum / settings.itemsPerPage);
                 element.rowsOnLastPage = element.rowsNum - (Math.floor(element.rowsNum / settings.itemsPerPage) * settings.itemsPerPage);
@@ -234,30 +252,53 @@
                 element.dateEnd = tools.getMaxDate(element);
 
                 // SP: added so we have a hook for nav stuff being added to the main container
-                $(element).addClass("fn-gantt-container");
+                $(element).addClass("fn-gantt-container");                
 
                 /* core.render(element); */
                 core.waitToggle(element, true, function () { core.render(element); });
             },
+            sort:function() {
+                var columnId = $(this).attr("data-id");
+                $(".gantt-table table th i").removeClass("icon-sort-up icon-sort-down");
+                dataPanel.find(".bar").remove();
+                // if resorting the same column, flip the sort.
+                var flipSort = element.sortColumn == columnId;
+                element.sortType = flipSort ? {"up":"down","down":"up"}[element.sortType] : "up";
+
+                element.data.sort(function(a, b) {
+                    var v1 = a[columnId], v2 = b[columnId], retVals = {"up":[1, -1], "down":[-1, 1]};
+                    return v1 > v2 ? retVals[element.sortType][0] : v2 > v1 ? retVals[element.sortType][1] : 0;
+                });
+                // redraw the table
+                core.redrawTaskTable(element, $(".gantt-table table"));
+
+                // redraw the rhs
+                core.fillData(element, dataPanel, leftPanel);
+
+                $(this).find("i").addClass("icon-sort-" + element.sortType);
+
+                element.sortColumn = columnId;
+            },
 
             // **Render the grid**
-            render: function (element) {
+            render: function (_element) {
+                element = _element;
                 var content = $('<div class="fn-content"/>');
                 
-                var $leftPanel = core.leftPanel(element);                                
+                // draw and append left panel
+                var $leftPanel = leftPanel = core.leftPanel(element);                                
                 content.append($leftPanel);
 
-                // sp 
+                // sp : draw and append table on left.
                 var $leftTable = core.leftTable(element);
                 content.append($leftTable);
 
+                // draw and append headers
                 var $rightPanel = core.rightPanel(element, $leftPanel);
                 var mLeft, hPos;
+                content.append($rightPanel);                
 
-                content.append($rightPanel);
-                //content.append(core.navigation(element));
-
-                var $dataPanel = $rightPanel.find(".dataPanel");
+                var $dataPanel = dataPanel = $rightPanel.find(".dataPanel");
 
                 element.gantt = $('<div class="fn-gantt" />').append(content);
 
@@ -327,32 +368,67 @@
                 core.waitToggle(element, false);
                 settings.onRender();
             },
+            redrawTaskTable : function(element, t) {
+                var entries = [];
+                t.find(".gantt-task-entry").remove();                               
+
+/*/                
+                var _oneGroup = function(g) {
+                    var first = true;
+
+                    for (var i = 0; i < g.tasks.length; i++) {
+                        var r =  "<tr class='gantt-task-entry'><td><strong>" + (first ? g.name : "") + "</strong></td>";
+                        for (var j=0; j < element.columns.length; j++) {
+                            r += ("<td>" + (g.tasks[i][element.columns[j].id] || "") + "</td>");
+                        }
+                        r += "</tr>";
+                        entries.push(r);
+                        first = false;
+                    }
+
+                };
+                $.each(element.groups, function (i, entry) {  
+                    _oneGroup(entry);
+                });
+//*/
+
+//*/
+                var lastGroup = null;
+                for (var i = 0; i < element.data.length; i++) {
+                    var task = element.data[i];
+                    var r =  "<tr class='gantt-task-entry'><td><strong>" + (lastGroup != task.groupName ? task.groupName : "") + "</strong></td>";
+                    lastGroup = task.groupName;
+                    for (var j=0; j < element.columns.length; j++) {
+                        r += ("<td>" + (task[element.columns[j].id] || "") + "</td>");
+                    }
+                    r += "</tr>";
+                    entries.push(r);
+                }                  
+//*/                
+                t.append($(entries.join("")));
+            },
 
             // create and return the left table 
             leftTable: function(element) {
-                var p = $("<div class='gantt-table'></div>").css("top", tools.getCellSize() * element.headerRows + "px"),
-                    t = $("<table></table>");
+                var cs = tools.getCellSize();
 
+                var p = $("<div class='gantt-table'></div>").css("top", (tools.getCellSize() * (element.headerRows - 1)) + "px"),
+                    t = $("<table></table>"),
+                    hr = "<tr><th data-id='group'>Group <i class='icon-sort-up'></i></th>";
+
+                for (var k = 0; k < element.columns.length; k++) {
+                    hr += ("<th data-id='" + element.columns[k].id + "'>" + element.columns[k].label + "<i></i></th>");
+                }
+                hr += "</tr>";
+                t.append($(hr));                             
+
+                core.redrawTaskTable(element, t);
                 p.append(t);
 
-                var entries = [];
-                $.each(element.data, function (i, entry) {
-                    if (i >= element.pageNum * settings.itemsPerPage && i < (element.pageNum * settings.itemsPerPage + settings.itemsPerPage)) {
-                        /*entries.push('<div class="row name row' + i + (entry.desc ? '' : ' fn-wide') + '" id="rowheader' + i + '" offset="' + i % settings.itemsPerPage * tools.getCellSize() + '">');
-                        entries.push('<span class="fn-label' + (entry.cssClass ? ' ' + entry.cssClass : '') + '">' + entry.name + '</span>');
-                        entries.push('</div>');
-
-                        if (entry.desc) {
-                            entries.push('<div class="row desc row' + i + ' " id="RowdId_' + i + '" data-id="' + entry.id + '">');
-                            entries.push('<span class="fn-label' + (entry.cssClass ? ' ' + entry.cssClass : '') + '">' + entry.desc + '</span>');
-                            entries.push('</div>');
-                        }*/
-                        entries.push("<tr><td>" + entry.name + "</td></tr>");
-
-                    }
-                });
-                p.append(entries.join(""));
-
+                /*t.on("click", "th", function() {                    
+                    core.sort($(this).attr("data-id"));
+                });*/
+                t.on("click", "th", core.sort);
 
                 return p;
             },
@@ -1141,7 +1217,7 @@
                         return "";
                     }
                 };
-                // Loop through the values of each data element and set a row
+                //* Loop through the values of each data element and set a row
                 $.each(element.data, function (i, entry) {
                     if (i >= element.pageNum * settings.itemsPerPage && i < (element.pageNum * settings.itemsPerPage + settings.itemsPerPage)) {
 
@@ -1301,6 +1377,7 @@
 
                     }
                 });
+                //*/
 
                 // if labels are on the right, now that everything is in the DOM we can adjust the width
                 // of the right pane to take into account the label for the latest task chronologically.

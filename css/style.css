@@ -36,6 +36,54 @@
     top:0px;
     z-index:50;
     width:225px;
+    border-collapse: collapse;
+}
+
+.gantt-table, .gantt-table tr {
+    padding:0;
+    margin:0;
+    border:0;
+    overflow: hidden;    
+}
+
+.gantt-table {
+    overflow-x: scroll;    
+    border-top: 1px solid #DDD;
+    margin-top:-1px;
+}
+
+.gantt-table th {
+    text-align: left;
+    cursor:pointer;
+    border-right:1px solid #DDD;
+}
+
+.gantt-table th i {
+    float: right;
+    margin-right: 5px;
+}
+
+.gantt-table th, .gantt-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    font-size:11px;
+    color:#414B57 !important;
+    /*height:23px;*/
+}
+
+.gantt-table th {
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #DDD;
+    height:21px;
+}
+
+.gantt-table table {
+    margin-top:0px;
+    border-collapse:collapse;
+}
+
+.gantt-table td {
+    height: 22px;
 }
 
 
