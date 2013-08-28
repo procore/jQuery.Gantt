@@ -56,7 +56,8 @@
             onRender: function() { return; },
             scrollToToday: true,
             labelsOnRight:true,
-            lastLabelPadding:20
+            lastLabelPadding:20,
+            showGroupColumn:false
         };
 
         // custom selector `:findday` used to match on specified day in ms.
@@ -399,7 +400,8 @@
                 var lastGroup = null;
                 for (var i = 0; i < element.data.length; i++) {
                     var task = element.data[i];
-                    var r =  "<tr class='gantt-task-entry'><td><strong>" + (lastGroup != task.groupName ? task.groupName : "") + "</strong></td>";
+                    var r =  "<tr class='gantt-task-entry'>";
+                    if (settings.showGroupColumn) r += "<td><strong>" + (lastGroup != task.groupName ? task.groupName : "") + "</strong></td>";
                     lastGroup = task.groupName;
                     for (var j=0; j < element.columns.length; j++) {
                         r += ("<td>" + (task[element.columns[j].id] || "") + "</td>");
@@ -417,7 +419,7 @@
 
                 var p = $("<div class='gantt-table'></div>").css("top", (tools.getCellSize() * (element.headerRows - 1)) + "px"),
                     t = $("<table></table>"),
-                    hr = "<tr><th data-id='group'>Group <i class='icon-sort-up'></i></th>";
+                    hr = settings.showGroupColumn ? "<tr><th data-id='group'>Group <i class='icon-sort-up'></i></th>" : "";
 
                 for (var k = 0; k < element.columns.length; k++) {
                     hr += ("<th data-id='" + element.columns[k].id + "'>" + element.columns[k].label + "<i></i></th>");
@@ -428,9 +430,6 @@
                 core.redrawTaskTable(element, t);
                 p.append(t);
 
-                /*t.on("click", "th", function() {                    
-                    core.sort($(this).attr("data-id"));
-                });*/
                 t.on("click", "th", core.sort);
 
                 return p;
@@ -961,6 +960,11 @@
             // **Navigation**
             navigation: function (element) {
                 var ganttNavigate = null;
+                var sliderMove = function(e) {
+                    if (element.scrollNavigation.scrollerMouseDown) {
+                        core.sliderScroll(element, e);
+                    }
+                };
                 // Scrolling navigation is provided by setting
                 // `settings.navigate='scroll'`
                 if (settings.navigate === "scroll") {
@@ -1021,12 +1025,13 @@
                                                     }
                                                     element.scrollNavigation.scrollerMouseDown = true;
                                                     core.sliderScroll(element, e);
+                                                    $(document).bind("mousemove", sliderMove);
                                                 })
-                                                .mousemove(function (e) {
+                                                /*.mousemove(function (e) {
                                                     if (element.scrollNavigation.scrollerMouseDown) {
                                                         core.sliderScroll(element, e);
                                                     }
-                                                })
+                                                })*/
                                             )
                                         )
                             .append($('<div class="nav-slider-right" />')
@@ -1070,6 +1075,7 @@
                                 );
                     $(document).mouseup(function () {
                         element.scrollNavigation.scrollerMouseDown = false;
+                        $(document).unbind("mousemove", sliderMove);
                     });
                 // Button navigation is provided by setting `settings.navigation='buttons'`
                 } else {
