@@ -1554,16 +1554,19 @@
             wheelScroll: function (element, e) {
                 var delta = e.detail ? e.detail * (-50) : e.wheelDelta / 120 * 50;
 
-                core.scrollPanel(element, delta);
+                var doScroll = e.wheelDeltaX == null || (Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY));
+                if (doScroll) {
+                    core.scrollPanel(element, delta);
 
-                clearTimeout(element.scrollNavigation.repositionDelay);
-                element.scrollNavigation.repositionDelay = setTimeout(core.repositionLabel, 50, element);
+                    clearTimeout(element.scrollNavigation.repositionDelay);
+                    element.scrollNavigation.repositionDelay = setTimeout(core.repositionLabel, 50, element);
 
-                if (e.preventDefault) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                } else {
-                    return false;
+                    if (e.preventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    } else {
+                        return false;
+                    }
                 }
             },
 
