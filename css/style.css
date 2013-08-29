@@ -35,7 +35,7 @@
     left:0px;
     top:0px;
     z-index:50;
-    width:225px;
+    width:400px;
     border-collapse: collapse;
 }
 
@@ -104,7 +104,7 @@
 
 .fn-gantt .leftPanel {
     float: left;
-    width: 225px;
+    width: 400px;
     overflow: hidden;
     border-right: 1px solid #DDD;
     position: relative;
@@ -115,7 +115,7 @@
     float: left;
     height: 24px;
     line-height: 24px;
-    margin-left: -24px;
+    /*margin-left: -24px;*/
 }
 
 .fn-gantt .leftPanel .fn-label {
@@ -149,7 +149,7 @@
 }
 
 .fn-gantt .leftPanel .fn-wide, .fn-gantt .leftPanel .fn-wide .fn-label {
-    width: 225px;
+    width: 400px;
 }
 
 .fn-gantt .spacer {
