@@ -29,13 +29,73 @@
 }
 
 
+/* new left panel (a table) */
+.fn-gantt .gantt-table {
+    position:absolute;
+    left:0px;
+    top:0px;
+    z-index:50;
+    width:225px;
+    border-collapse: collapse;
+}
+
+.gantt-table, .gantt-table tr {
+    padding:0;
+    margin:0;
+    border:0;
+    overflow: hidden;    
+}
+
+.gantt-table {
+    font-weight: bold;
+    background-color: white;
+    overflow-x: scroll;    
+    border-top: 1px solid #DDD;
+    margin-top:-1px;
+}
+
+.gantt-table th {
+    text-align: left;
+    cursor:pointer;
+    border-right:1px solid #DDD;
+}
+
+.gantt-table th i {
+    float: right;
+    margin-right: 5px;
+}
+
+.gantt-table th, .gantt-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    font-size:11px;
+    color:#414B57 !important;
+    height:21px;
+    padding-right:5px;
+    padding-left:3px;
+}
+
+.gantt-table th {
+    background-color: #f6f6f6;
+    border-bottom: 1px solid #DDD;    
+}
+
+.gantt-table table {
+    margin-top:0px;
+    border-collapse:collapse;
+}
+
+.gantt-table td {
+    border-bottom:1px solid #DDD;
+}
+
 
 
 /* === LEFT PANEL === */
 
 .fn-gantt .leftPanel {
     float: left;
-    width: 400px;
+    width: 225px;
     overflow: hidden;
     border-right: 1px solid #DDD;
     position: relative;
@@ -183,13 +243,18 @@
     margin: 4px 3px 3px 3px;
     position: absolute;
     z-index: 10;
-    text-align: center;
-        -webkit-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-        -moz-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-        box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
-            -webkit-border-radius: 3px;
-            -moz-border-radius: 3px;
-            border-radius: 3px;
+    text-align: center;    
+}
+
+.fn-gantt .bar-inner {
+    float:left;
+    height:20px;
+    -webkit-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    -moz-box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    box-shadow: 0 0 1px rgba(0,0,0,0.25) inset;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .fn-gantt .bar .fn-label {
@@ -203,6 +268,14 @@
     color: #414B57 !important;
     text-align: center;
     font-size: 11px;
+}
+
+/* SP */
+.fn-gantt .bar .label-on-right {
+    width:auto;
+    float:right;
+    padding-left:5px;
+    padding-right:5px;
 }
 
 .fn-gantt .ganttRed {
@@ -224,6 +297,10 @@
 }
 .fn-gantt .ganttOrange .fn-label {
     color: #714715 !important;
+}
+
+.fn-gantt .ganttBlue {
+    background-color: #D0E4FD;
 }
 
 .fn-gantt .summaryTask {

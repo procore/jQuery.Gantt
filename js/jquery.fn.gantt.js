@@ -8,6 +8,7 @@
 //          scale: "weeks",
 //          minScale: "weeks",
 //          maxScale: "months",
+//          labelsOnRight:false,  // defaults to true
 //          onItemClick: function(data) {
 //              alert("Item clicked - show some details");
 //          },
@@ -53,7 +54,10 @@
             onItemClick: function (data) { return; },
             onAddClick: function (data) { return; },
             onRender: function() { return; },
-            scrollToToday: true
+            scrollToToday: true,
+            labelsOnRight:true,
+            lastLabelPadding:20,
+            showGroupColumn:false
         };
 
         // custom selector `:findday` used to match on specified day in ms.
@@ -182,6 +186,8 @@
             }
         };
 
+        var leftPanel, dataPanel, element;
+
 
         // Grid management
         // ===============
@@ -209,7 +215,9 @@
                 // Initialize data with a json object or fetch via an xhr
                 // request depending on `settings.source`
                 if (typeof settings.source !== "string") {
-                    element.data = settings.source;
+                    //element.data = settings.source;
+                    element.groups = settings.groups;
+                    element.columns = settings.columns;
                     core.init(element);
                 } else {
                     $.getJSON(settings.source, function (jsData) {
@@ -223,6 +231,20 @@
             // Here we calculate the number of rows, pages and visible start
             // and end dates once the data is ready
             init: function (element) {
+                // SP: create data by doing an initial dump from groups into data
+                element.data = [];
+                for (var i = 0; i < element.groups.length; i++) {
+                    var g = element.groups[i];
+                    for (var j = 0; j < g.tasks.length; j++) {
+                        var t = g.tasks[j];
+                        t.group = i;                        
+                        t.groupName = g.name;
+                        element.data.push(t);
+                    }
+                }
+                element.sortColumn = "group"; // by default.
+                element.sortType = "up";
+
                 element.rowsNum = element.data.length;
                 element.pageCount = Math.ceil(element.rowsNum / settings.itemsPerPage);
                 element.rowsOnLastPage = element.rowsNum - (Math.floor(element.rowsNum / settings.itemsPerPage) * settings.itemsPerPage);
@@ -231,24 +253,56 @@
                 element.dateEnd = tools.getMaxDate(element);
 
                 // SP: added so we have a hook for nav stuff being added to the main container
-                $(element).addClass("fn-gantt-container");
+                $(element).addClass("fn-gantt-container");                
 
                 /* core.render(element); */
                 core.waitToggle(element, true, function () { core.render(element); });
             },
+            sort:function() {
+                var columnId = $(this).attr("data-id");
+                $(".gantt-table table th i").removeClass("icon-sort-up icon-sort-down");
+                dataPanel.find(".bar").remove();
+                // if resorting the same column, flip the sort.
+                var flipSort = element.sortColumn == columnId;
+                element.sortType = flipSort ? {"up":"down","down":"up"}[element.sortType] : "up";
+
+                element.data.sort(function(a, b) {
+                    var v1 = a[columnId], v2 = b[columnId], retVals = {"up":[1, -1], "down":[-1, 1]};
+                    if (v1 == null && v2 == null) return 0;
+                    else if (v1 == null && v2 != null) return -1;
+                    else if (v2 == null && v1 != null) return 1;
+                    return v1 > v2 ? retVals[element.sortType][0] : v2 > v1 ? retVals[element.sortType][1] : 0;
+                });
+                // redraw the table
+                core.redrawTaskTable(element, $(".gantt-table table"));
+
+                // redraw the rhs
+                core.fillData(element, dataPanel, leftPanel);
+
+                $(this).find("i").addClass("icon-sort-" + element.sortType);
+
+                element.sortColumn = columnId;
+            },
 
             // **Render the grid**
-            render: function (element) {
+            render: function (_element) {
+                element = _element;
                 var content = $('<div class="fn-content"/>');
-                var $leftPanel = core.leftPanel(element);
+                
+                // draw and append left panel
+                var $leftPanel = leftPanel = core.leftPanel(element);                                
                 content.append($leftPanel);
+
+                // sp : draw and append table on left.
+                var $leftTable = core.leftTable(element);
+                content.append($leftTable);
+
+                // draw and append headers
                 var $rightPanel = core.rightPanel(element, $leftPanel);
                 var mLeft, hPos;
+                content.append($rightPanel);                
 
-                content.append($rightPanel);
-                //content.append(core.navigation(element));
-
-                var $dataPanel = $rightPanel.find(".dataPanel");
+                var $dataPanel = dataPanel = $rightPanel.find(".dataPanel");
 
                 element.gantt = $('<div class="fn-gantt" />').append(content);
 
@@ -317,6 +371,68 @@
                 $dataPanel.css({ height: $leftPanel.height() });
                 core.waitToggle(element, false);
                 settings.onRender();
+            },
+            redrawTaskTable : function(element, t) {
+                var entries = [];
+                t.find(".gantt-task-entry").remove();                               
+
+/*/                
+                var _oneGroup = function(g) {
+                    var first = true;
+
+                    for (var i = 0; i < g.tasks.length; i++) {
+                        var r =  "<tr class='gantt-task-entry'><td><strong>" + (first ? g.name : "") + "</strong></td>";
+                        for (var j=0; j < element.columns.length; j++) {
+                            r += ("<td>" + (g.tasks[i][element.columns[j].id] || "") + "</td>");
+                        }
+                        r += "</tr>";
+                        entries.push(r);
+                        first = false;
+                    }
+
+                };
+                $.each(element.groups, function (i, entry) {  
+                    _oneGroup(entry);
+                });
+//*/
+
+//*/
+                var lastGroup = null;
+                for (var i = 0; i < element.data.length; i++) {
+                    var task = element.data[i];
+                    var r =  "<tr class='gantt-task-entry'>";
+                    if (settings.showGroupColumn) r += "<td><strong>" + (lastGroup != task.groupName ? task.groupName : "") + "</strong></td>";
+                    lastGroup = task.groupName;
+                    for (var j=0; j < element.columns.length; j++) {
+                        r += ("<td>" + (task[element.columns[j].id] || "") + "</td>");
+                    }
+                    r += "</tr>";
+                    entries.push(r);
+                }                  
+//*/                
+                t.append($(entries.join("")));
+            },
+
+            // create and return the left table 
+            leftTable: function(element) {
+                var cs = tools.getCellSize();
+
+                var p = $("<div class='gantt-table'></div>").css("top", (tools.getCellSize() * (element.headerRows - 1)) + "px"),
+                    t = $("<table></table>"),
+                    hr = settings.showGroupColumn ? "<tr><th data-id='group'>Group <i class='icon-sort-up'></i></th>" : "";
+
+                for (var k = 0; k < element.columns.length; k++) {
+                    hr += ("<th data-id='" + element.columns[k].id + "'>" + element.columns[k].label + "<i></i></th>");
+                }
+                hr += "</tr>";
+                t.append($(hr));                             
+
+                core.redrawTaskTable(element, t);
+                p.append(t);
+
+                t.on("click", "th", core.sort);
+
+                return p;
             },
 
             // Create and return the left panel with labels
@@ -451,7 +567,6 @@
                     var dowArr = [];
 
                     var horArr = [];
-
 
                     var today = new Date();
                     today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -845,6 +960,11 @@
             // **Navigation**
             navigation: function (element) {
                 var ganttNavigate = null;
+                var sliderMove = function(e) {
+                    if (element.scrollNavigation.scrollerMouseDown) {
+                        core.sliderScroll(element, e);
+                    }
+                };
                 // Scrolling navigation is provided by setting
                 // `settings.navigate='scroll'`
                 if (settings.navigate === "scroll") {
@@ -905,12 +1025,13 @@
                                                     }
                                                     element.scrollNavigation.scrollerMouseDown = true;
                                                     core.sliderScroll(element, e);
+                                                    $(document).bind("mousemove", sliderMove);
                                                 })
-                                                .mousemove(function (e) {
+                                                /*.mousemove(function (e) {
                                                     if (element.scrollNavigation.scrollerMouseDown) {
                                                         core.sliderScroll(element, e);
                                                     }
-                                                })
+                                                })*/
                                             )
                                         )
                             .append($('<div class="nav-slider-right" />')
@@ -954,6 +1075,7 @@
                                 );
                     $(document).mouseup(function () {
                         element.scrollNavigation.scrollerMouseDown = false;
+                        $(document).unbind("mousemove", sliderMove);
                     });
                 // Button navigation is provided by setting `settings.navigation='buttons'`
                 } else {
@@ -1024,14 +1146,25 @@
             // Return an element representing a progress of position within
             // the entire chart
             createProgressBar: function (days, cls, desc, label, dataObj) {
-                var cellWidth = tools.getCellSize();
-                var barMarg = tools.getProgressBarMargin() || 0;
-                var bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>')
-                        .addClass(cls)
-                        .css({
-                            width: ((cellWidth * days) - barMarg) + 5
-                        })
-                        .data("dataObj", dataObj);
+
+                var cellWidth = tools.getCellSize(),
+                    barMarg = tools.getProgressBarMargin() || 0,                    
+                    width = ((cellWidth * days) - barMarg) + 5,
+                    bar; 
+
+                if (!settings.labelsOnRight) {
+                    bar = $('<div class="bar"><div class="fn-label">' + label + '</div></div>');                    
+                    bar.addClass(cls).css("width", width);
+                }
+                else {
+                    var lbl = $('<div class="fn-label label-on-right">' + label + '</div>'),                                   
+                    bar = $('<div class="bar" style="background-color:transparent;"></div>');
+                    var barVisual = $("<div class='bar-inner'></div>").addClass(cls).css("width", width);
+                    bar.append(barVisual);             
+                    bar.append(lbl);
+                }
+                    
+                bar.data("dataObj", dataObj);               
 
                 if (desc) {
                     bar
@@ -1093,7 +1226,7 @@
                         return "";
                     }
                 };
-                // Loop through the values of each data element and set a row
+                //* Loop through the values of each data element and set a row
                 $.each(element.data, function (i, entry) {
                     if (i >= element.pageNum * settings.itemsPerPage && i < (element.pageNum * settings.itemsPerPage + settings.itemsPerPage)) {
 
@@ -1253,6 +1386,34 @@
 
                     }
                 });
+                //*/
+
+                // if labels are on the right, now that everything is in the DOM we can adjust the width
+                // of the right pane to take into account the label for the latest task chronologically.
+                // also here we set a width for each bar that takes its inner bar and label into account; this
+                // then forces them to not wrap (we cant do this before it has been added to the dom, as the text
+                // varies and so does its font size, so the actual rendered width of the label is unknown until
+                // the browser has drawn it)
+                if (settings.labelsOnRight) {
+                    var mr = -Infinity;
+                    $(".bar").each(function(i, e) {                    
+                        var l = $(this).find(".fn-label"),
+                            bi = $(this).find(".bar-inner"),
+                            biw = bi.outerWidth(),
+                            lw = l.outerWidth(),
+                            lo = l.offset(),
+                            w = biw + lw,
+                            ml = parseInt(_css($(this), "margin-left"));
+
+                        // keep track of the rightmost label position.
+                        mr = Math.max(mr, ml + w);
+
+                        $(this).width(w); // set bar width to encompass inner bar and label
+                    });                
+                }
+
+                // adjust the scroll max to allow for the last label
+                element.scrollNavigation.panelMaxPos += (mr - $(".dataPanel").width() + settings.lastLabelPadding);            
             },
             // **Navigation**
             navigateTo: function (element, val) {
@@ -1399,15 +1560,19 @@
             wheelScroll: function (element, e) {
                 var delta = e.detail ? e.detail * (-50) : e.wheelDelta / 120 * 50;
 
-                core.scrollPanel(element, delta);
+                var doScroll = e.wheelDeltaX == null || (Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY));
+                if (doScroll) {
+                    core.scrollPanel(element, delta);
 
-                clearTimeout(element.scrollNavigation.repositionDelay);
-                element.scrollNavigation.repositionDelay = setTimeout(core.repositionLabel, 50, element);
+                    clearTimeout(element.scrollNavigation.repositionDelay);
+                    element.scrollNavigation.repositionDelay = setTimeout(core.repositionLabel, 50, element);
 
-                if (e.preventDefault) {
-                    e.preventDefault();
-                } else {
-                    return false;
+                    if (e.preventDefault) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    } else {
+                        return false;
+                    }
                 }
             },
 
