@@ -93,6 +93,11 @@
     border-bottom:1px solid #DDD;
 }
 
+.summary-task {
+    height: 5px !important;
+    margin-top: 8px;
+    background-color: black;
+}
 
 
 /* === LEFT PANEL === */

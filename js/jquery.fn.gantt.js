@@ -1251,7 +1251,7 @@
                 $.each(element.data, function (i, entry) {
                     if (i >= element.pageNum * settings.itemsPerPage && i < (element.pageNum * settings.itemsPerPage + settings.itemsPerPage)) {
 
-                        if (!entry.summary) {
+                        if (entry.values) {
                             $.each(entry.values, function (j, day) {
                                 var _bar = null;
 
@@ -1403,6 +1403,10 @@
                                     } else if ($l) {
                                         $l.css("color", "");
                                     }
+
+                                    // if summary, add summary class
+                                    if (entry.summary)
+                                        _bar.find(".bar-inner").addClass("summary-task");
                                 }
                             });
                         }
