@@ -227,10 +227,14 @@
                 }
             },
 
+            columnMap:{},
             // **Setup the initial view**
             // Here we calculate the number of rows, pages and visible start
             // and end dates once the data is ready
             init: function (element) {
+                for (var i = 0; i<element.columns.length;i++)
+                    core.columnMap[element.columns[i].id] = element.columns[i];
+
                 // SP: create data by doing an initial dump from groups into data
                 element.data = [];
                 var cGroup = null, cGroupIndex = 0;
@@ -239,14 +243,7 @@
                     if (t.summary && t.name != cGroup) {
                         cGroupIndex ++;
                         cGroup = t.name;
-                    }
-                    /*
-                    for (var j = 0; j < g.tasks.length; j++) {
-                        var t = g.tasks[j];
-                        t.group = i;                        
-                        t.groupName = g.name;
-                        element.data.push(t);
-                    }*/
+                    }                    
                     t.groupName = cGroup;
                     t.groupIndex = cGroupIndex;
                     element.data.push(t);
@@ -268,39 +265,42 @@
                 core.waitToggle(element, true, function () { core.render(element); });
             },
             sort:function() {
-                var columnId = $(this).attr("data-id");
-                $(".gantt-table table th i").removeClass("icon-sort-up icon-sort-down");
-                dataPanel.find(".bar").remove();
-                // if resorting the same column, flip the sort.
-                var flipSort = element.sortColumn == columnId;
-                element.sortType = flipSort ? {"up":"down","down":"up"}[element.sortType] : "up";
+                var columnId = $(this).attr("data-id"), col = core.columnMap[columnId];
+                if (col.sortable !== false) {
+                    $(".gantt-table table th i").removeClass("icon-sort-up icon-sort-down");
+                    dataPanel.find(".bar").remove();
+                    // if resorting the same column, flip the sort.
+                    var flipSort = element.sortColumn == columnId;
+                    element.sortType = flipSort ? {"up":"down","down":"up"}[element.sortType] : "up";
 
-                element.data.sort(function(a, b) {
-                    var retVals = {"up":[1, -1], "down":[-1, 1]}
-                    // first match group index - this takes priority.
-                    var g1 = a.groupIndex, g2 = b.groupIndex;
-                    if (g1 < g2) return -1;
-                    else if (g1 > g2) return 1;
-                    // if the same group but one is a summary, it always comes first, regardless of the sort order.
-                    else if (a.summary) return -1;
-                    else if (b.summary) return 1;
+                    element.data.sort(function(a, b) {
+                        var retVals = {"up":[1, -1], "down":[-1, 1]}
+                        // first match group index - this takes priority.
+                        var g1 = a.groupIndex, g2 = b.groupIndex;
+                        if (g1 < g2) return -1;
+                        else if (g1 > g2) return 1;
+                        // if the same group but one is a summary, it always comes first, regardless of the sort order.
+                        else if (a.summary) return -1;
+                        else if (b.summary) return 1;
 
-                    // lastly, match on the column's value.
-                    var v1 = a[columnId], v2 = b[columnId];
-                    if (v1 == null && v2 == null) return 0;
-                    else if (v1 == null && v2 != null) return -1;
-                    else if (v2 == null && v1 != null) return 1;
-                    return v1 > v2 ? retVals[element.sortType][0] : v2 > v1 ? retVals[element.sortType][1] : 0;
-                });
-                // redraw the table
-                core.redrawTaskTable(element, $(".gantt-table table"));
+                        // TODO should lookup column in a map then use the resolve method to get the values
+                        // lastly, match on the column's value.
+                        var v1 = core.resolve(core.columnMap[columnId], a), v2 = core.resolve(core.columnMap[columnId], b);
+                        if (v1 == null && v2 == null) return 0;
+                        else if (v1 == null && v2 != null) return -1;
+                        else if (v2 == null && v1 != null) return 1;
+                        return v1 > v2 ? retVals[element.sortType][0] : v2 > v1 ? retVals[element.sortType][1] : 0;
+                    });
+                    // redraw the table
+                    core.redrawTaskTable(element, $(".gantt-table table"));
 
-                // redraw the rhs
-                core.fillData(element, dataPanel, leftPanel);
+                    // redraw the rhs
+                    core.fillData(element, dataPanel, leftPanel);
 
-                $(this).find("i").addClass("icon-sort-" + element.sortType);
+                    $(this).find("i").addClass("icon-sort-" + element.sortType);
 
-                element.sortColumn = columnId;
+                    element.sortColumn = columnId;
+                }
             },
 
             // **Render the grid**
@@ -391,42 +391,38 @@
                 core.waitToggle(element, false);
                 settings.onRender();
             },
+            resolve : function(col, item) {
+                var out = "";
+                if (col.value && item.values && item.values.length > 0) 
+                    out = item.values[0][col.value];
+                else 
+                    out = item[col.id];
+
+                return out;
+            },
+            renderItem : function(col, item) {
+                var out = core.resolve(col, item);
+                if (col.render) out = col.render(out);
+                return out || "";
+            },
             redrawTaskTable : function(element, t) {
-                var entries = [];
+                var entries = [], skippedCols = 0;
                 t.find(".gantt-task-entry").remove();                               
-
-/*/                
-                var _oneGroup = function(g) {
-                    var first = true;
-
-                    for (var i = 0; i < g.tasks.length; i++) {
-                        var r =  "<tr class='gantt-task-entry'><td><strong>" + (first ? g.name : "") + "</strong></td>";
-                        for (var j=0; j < element.columns.length; j++) {
-                            r += ("<td>" + (g.tasks[i][element.columns[j].id] || "") + "</td>");
-                        }
-                        r += "</tr>";
-                        entries.push(r);
-                        first = false;
-                    }
-
-                };
-                $.each(element.groups, function (i, entry) {  
-                    _oneGroup(entry);
-                });
-//*/
-
 //*/                
                 for (var i = 0; i < element.data.length; i++) {
                     var task = element.data[i];
-                    var r =  "<tr class='gantt-task-entry'>";
-                    if (task.summary) {
-                        r +="<td class='task-group' colspan='" + element.columns.length + "'>" + task.name + "</td>";
-                    }
-                    else {
-                        for (var j=0; j < element.columns.length; j++) {
-                            r += ("<td>" + (task[element.columns[j].id] || "") + "</td>");
+                    var r =  "<tr class='gantt-task-entry'>";                                        
+                    var cls = task.summary ? "task-group" : "task";
+                    for (var j=0; j < element.columns.length; j++) {
+                        var col = element.columns[j];
+                        if (col.summary === false && task.summary)
+                            skippedCols++;
+                        else {
+                            var cs = task.summary && skippedCols > 0 ? " colspan='" + (skippedCols + 1) + "' " : "";
+                            r += ("<td" + cs + " class='" + cls + "'>" + core.renderItem(col, task) + "</td>");
+                            skippedCols = 0;
                         }
-                    }
+                    }                    
                     r += "</tr>";
                     entries.push(r);
                 }                  

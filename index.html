@@ -447,6 +447,17 @@ values: [{
 		$(function() {
 
 			"use strict";
+			
+
+			var dateRenderer = function(v) {
+				try {
+					var d = new Date(parseInt(v.match(/Date\((.*)\)/)[1])),
+						pad = function(_v) { return (""+_v).length == 1 ? "0" + _v : _v; };
+					return pad(d.getMonth()+1) + "-" + pad(d.getDate()) + "-" + (1900 + d.getYear());	
+				} catch (e) {
+					return "";
+				}
+			};
 
 			$(".gantt").gantt({				
 				navigate: "scroll",
@@ -466,9 +477,11 @@ values: [{
 					}
 				},
 				columns:[
+					{ id:"id", label:"Id", summary:false, sortable:false },
 					{ id:"name", label:"Name" },
-					{ id:"foo", label:"Foo" },
-					{ id:"bar", label:"Bar" }
+					{ id:"start", label:"Start", value:"from", render:dateRenderer },
+					{ id:"end", label:"End", value:"to", render:dateRenderer },
+					{ id:"resource", label:"Resource" }
 				],
 				tasks:[
 					{
@@ -481,8 +494,7 @@ values: [{
 					},					
 					{
 						name: "Analysis",
-						foo:"barzoombaratmaba",
-						bar:"long value long value",
+						id:123,
 						values: [{
 							from: "/Date(1320192000000)/",
 							to: "/Date(1322401600000)/",
@@ -491,11 +503,11 @@ values: [{
 						}]
 					},{
 						name: "No Date",
-						foo:"BAZ",
+						id:232,
 						values: []
 					},{
 						name: "Scoping",
-						foo:"bar",
+						id:313,
 						values: [{
 							from: "/Date(1322611200000)/",
 							to: "/Date(1323302400000)/",
@@ -513,7 +525,7 @@ values: [{
 					},
 					{ 
 						name: "Development",								
-						foo:"bar",
+						id:829,
 						values: [{
 							from: "/Date(1323802400000)/",
 							to: "/Date(1325685200000)/",
@@ -523,7 +535,7 @@ values: [{
 					},
 					{
 						name: "Showcasing",
-						foo:"bar",
+						id:749,
 						values: [{
 							from: "/Date(1325685200000)/",
 							to: "/Date(1325695200000)/",
@@ -541,7 +553,7 @@ values: [{
 					},						
 					{
 						name: "Development",
-						foo:"bar",
+						id:829,
 						values: [{
 							from: "/Date(1325785200000)/",
 							to: "/Date(1326785200000)/",
@@ -551,7 +563,7 @@ values: [{
 					},
 					{
 						name: "Showcasing",
-						foo:"bar",
+						id:364,
 						values: [{
 							from: "/Date(1328785200000)/",
 							to: "/Date(1328905200000)/",
@@ -569,7 +581,7 @@ values: [{
 					},					
 					{
 						name:"Training",
-						foo:"bar",
+						id:848,
 						values: [{
 							from: "/Date(1330011200000)/",
 							to: "/Date(1336611200000)/",
@@ -579,7 +591,7 @@ values: [{
 					},
 					{
 						name:"Deployment",
-						foo:"bar",
+						id:734,
 						values: [{
 							from: "/Date(1336611200000)/",
 							to: "/Date(1338711200000)/",
@@ -589,7 +601,7 @@ values: [{
 					},
 					{
 						name: "Warranty Period",
-						foo:"bar",
+						id:728,
 						values: [{
 							from: "/Date(1336611200000)/",
 							to: "/Date(1349711200000)/",
