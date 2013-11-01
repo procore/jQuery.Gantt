@@ -50,7 +50,7 @@
             useCookie: false,
             maxScale: "months",
             minScale: "hours",
-            waitText: "Please wait...",
+            waitText: "",
             onItemClick: function (data) { return; },
             onAddClick: function (data) { return; },
             onRender: function() { return; },
@@ -243,7 +243,7 @@
                     if (t.summary && t.name != cGroup) {
                         cGroupIndex ++;
                         cGroup = t.name;
-                    }                    
+                    }                
                     t.groupName = cGroup;
                     t.groupIndex = cGroupIndex;
                     element.data.push(t);
@@ -267,7 +267,7 @@
             sort:function() {
                 var columnId = $(this).attr("data-id"), col = core.columnMap[columnId];
                 if (col.sortable !== false) {
-                    $(".gantt-table table th i").removeClass("icon-sort-up icon-sort-down");
+                    $(".sorting-arrow").text('');
                     dataPanel.find(".bar").remove();
                     // if resorting the same column, flip the sort.
                     var flipSort = element.sortColumn == columnId;
@@ -297,9 +297,14 @@
                     // redraw the rhs
                     core.fillData(element, dataPanel, leftPanel);
 
-                    $(this).find("i").addClass("icon-sort-" + element.sortType);
+                    if(element.sortType === 'down'){
+                      $(this).find(".sorting-arrow").text(' ▾');
+                    } else {
+                      $(this).find(".sorting-arrow").text(' ▴');
+                    }
 
                     element.sortColumn = columnId;
+                    settings.onRender();
                 }
             },
 
@@ -436,12 +441,12 @@
 
                 var p = $("<div class='gantt-table'></div>").css("top", (tools.getCellSize() * (element.headerRows - 1)) + "px"),
                     t = $("<table></table>"),
-                    hr = "";
+                    hr = "<thead>";
 
                 for (var k = 0; k < element.columns.length; k++) {
-                    hr += ("<th data-id='" + element.columns[k].id + "'>" + element.columns[k].label + "<i></i></th>");
+                    hr += ("<th data-id='" + element.columns[k].id + "'>" + element.columns[k].label + "<span class='sorting-arrow'></span></th>");
                 }
-                hr += "</tr>";
+                hr += "</thead>";
                 t.append($(hr));                             
 
                 core.redrawTaskTable(element, t);
@@ -829,14 +834,14 @@
                         default:
                             range = tools.parseDateRange(element.dateStart, element.dateEnd);
 
-    						var dateBefore = ktkGetNextDate(range[0], -1);
+                            var dateBefore = ktkGetNextDate(range[0], -1);
                             var year = dateBefore.getFullYear();
                             var month = dateBefore.getMonth();
                             var day = dateBefore;
 
                             for (var i = 0; i < range.length; i++) {
                                 var rday = range[i];
-    							
+                                
                                 // Fill years
                                 if (rday.getFullYear() !== year) {
                                     yearArr.push(
@@ -890,7 +895,7 @@
                                 + tools.getCellSize() * daysInMonth + 'px"><div class="fn-label">'
                                 + settings.months[month]
                                 + '</div></div>');
-    						
+                            
                             dataPanel = core.dataPanel(element, range.length * tools.getCellSize());
 
 
@@ -1431,7 +1436,7 @@
                         // keep track of the rightmost label position.
                         mr = Math.max(mr, ml + w);
 
-                        $(this).width(w); // set bar width to encompass inner bar and label
+                        $(this).width(w + 1); // set bar width to encompass inner bar and label
                     });                
                 }
 
@@ -1724,12 +1729,10 @@
             getMaxDate: function (element) {
                 var maxDate = null;
                 $.each(element.data, function (i, entry) {
-                    if (!entry.summary) {
-                        $.each(entry.values, function (i, date) {
-                            if (date.to != null)
-                                maxDate = maxDate < tools.dateDeserialize(date.to) ? tools.dateDeserialize(date.to) : maxDate;
-                        });
-                    }
+                    $.each(entry.values, function (i, date) {
+                        if (date.to != null)
+                            maxDate = maxDate < tools.dateDeserialize(date.to) ? tools.dateDeserialize(date.to) : maxDate;
+                    });
                 });
                 if (maxDate == null) return null;
                 switch (settings.scale) {
@@ -1760,12 +1763,10 @@
             getMinDate: function (element) {
                 var minDate = null;
                 $.each(element.data, function (i, entry) {
-                    if (!entry.summary) {
-                        $.each(entry.values, function (i, date) {
-                            if (date.from != null)
-                                minDate = minDate > tools.dateDeserialize(date.from) || minDate === null ? tools.dateDeserialize(date.from) : minDate;
-                        });
-                    }
+                    $.each(entry.values, function (i, date) {
+                        if (date.from != null)
+                            minDate = minDate > tools.dateDeserialize(date.from) || minDate === null ? tools.dateDeserialize(date.from) : minDate;
+                    });
                 });
                 if (minDate == null) return null;
                 switch (settings.scale) {
@@ -1814,30 +1815,30 @@
                 var ret = [];
                 var i = 0;
                 for(;;) {
-					var dayStartTime = new Date(current);
-					dayStartTime.setHours(Math.floor((current.getHours()) / scaleStep) * scaleStep);
-					
+                    var dayStartTime = new Date(current);
+                    dayStartTime.setHours(Math.floor((current.getHours()) / scaleStep) * scaleStep);
+
                     if (ret[i] && dayStartTime.getDay() !== ret[i].getDay()) {
-						// If mark-cursor jumped to next day, make sure it starts at 0 hours
-						dayStartTime.setHours(0);
+                        // If mark-cursor jumped to next day, make sure it starts at 0 hours
+                        dayStartTime.setHours(0);
                     }
-					ret[i] = dayStartTime;
+                    ret[i] = dayStartTime;
 
-					// Note that we use ">" because we want to include the end-time point.
-					if(current.getTime() > to.getTime()) break;
+                    // Note that we use ">" because we want to include the end-time point.
+                    if(current.getTime() > to.getTime()) break;
 
-					/* BUG-2: current is moved backwards producing a dead-lock! (crashes chrome/IE/firefox)
-					 * SEE: https://github.com/taitems/jQuery.Gantt/issues/62
+                    /* BUG-2: current is moved backwards producing a dead-lock! (crashes chrome/IE/firefox)
+                     * SEE: https://github.com/taitems/jQuery.Gantt/issues/62
                     if (current.getDay() !== ret[i].getDay()) {
                        current.setHours(0);
                     }
-					*/
+                    */
 
-					current = ktkGetNextDate(current, scaleStep);
+                    current = ktkGetNextDate(current, scaleStep);
 
                     i++;
                 };
-				
+
                 return ret;
             },
 
@@ -2013,15 +2014,15 @@
 })(jQuery);
 
 function ktkGetNextDate(currentDate, scaleStep) {
-	for(var minIncrements = 1;; minIncrements++) {
-		var nextDate = new Date(currentDate);
-		nextDate.setHours(currentDate.getHours() + scaleStep * minIncrements);
+    for(var minIncrements = 1;; minIncrements++) {
+        var nextDate = new Date(currentDate);
+        nextDate.setHours(currentDate.getHours() + scaleStep * minIncrements);
 
-		if(nextDate.getTime() != currentDate.getTime()) {
-			return nextDate;
-		}
+        if(nextDate.getTime() != currentDate.getTime()) {
+            return nextDate;
+        }
 
-		// If code reaches here, it's because current didn't really increment (invalid local time) because of daylight-saving adjustments
-		// => retry adding 2, 3, 4 hours, and so on (until nextDate > current)
-	}	
+        // If code reaches here, it's because current didn't really increment (invalid local time) because of daylight-saving adjustments
+        // => retry adding 2, 3, 4 hours, and so on (until nextDate > current)
+    }   
 }
